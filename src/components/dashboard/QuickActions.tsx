@@ -2,43 +2,48 @@ import { Link } from "react-router-dom";
 import { Beef, FileCheck, Users, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/translations";
 
-const actions = [
-  {
-    title: "Register New Cow",
-    description: "Add a new cattle to the system",
-    icon: Beef,
-    href: "/register",
-    variant: "default" as const,
-  },
-  {
-    title: "Verify Cattle",
-    description: "Verify nose print or tag",
-    icon: FileCheck,
-    href: "/verify",
-    variant: "secondary" as const,
-  },
-  {
-    title: "Browse All Cows",
-    description: "View and manage cattle records",
-    icon: Users,
-    href: "/cattle",
-    variant: "secondary" as const,
-  },
-  {
-    title: "Manage Reports",
-    description: "Review pending reports",
-    icon: AlertCircle,
-    href: "/reports",
-    variant: "secondary" as const,
-  },
-];
+
 
 export const QuickActions = () => {
+  const { t } = useTranslation();
+
+  const actions = [
+    {
+      title: t('addNewCattle'),
+      description: t('registerNewCattle'),
+      icon: Beef,
+      href: "/register",
+      variant: "default" as const,
+    },
+    {
+      title: t('verifyIdentity'),
+      description: t('verificationCenter'),
+      icon: FileCheck,
+      href: "/verify",
+      variant: "secondary" as const,
+    },
+    {
+      title: t('viewAllCattle'),
+      description: t('cattleManagement'),
+      icon: Users,
+      href: "/cattle",
+      variant: "secondary" as const,
+    },
+    {
+      title: t('generateReport'),
+      description: t('reports'),
+      icon: AlertCircle,
+      href: "/reports",
+      variant: "secondary" as const,
+    },
+  ];
+
   return (
     <Card className="shadow-card">
       <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
+        <CardTitle>{t('quickActions')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

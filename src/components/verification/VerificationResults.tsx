@@ -8,17 +8,20 @@ interface VerificationResultsProps {
     found: boolean;
     similarity: number;
     cow?: {
-      tag: string;
+      cow_tag?: string;
+      tag?: string;
       breed: string;
       color: string;
-      age: number;
-      owner: {
+      age?: number;
+      owner_name?: string;
+      facial_image_url?: string;
+      owner?: {
         name: string;
         phone: string;
         email: string;
       };
-      lastVerified: string;
-      location: string;
+      lastVerified?: string;
+      location?: string;
     };
   };
 }
@@ -64,7 +67,30 @@ export const VerificationResults = ({ result }: VerificationResultsProps) => {
       {result.found && result.cow && (
         <CardContent>
           <div className="p-6 rounded-lg border bg-card">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Cow Facial Image */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  📸 Cow Image
+                </h3>
+                {result.cow.facial_image_url ? (
+                  <div className="border rounded-lg overflow-hidden">
+                    <img 
+                      src={`${import.meta.env.VITE_API_BASE_URL}${result.cow.facial_image_url}`}
+                      alt={`Cow ${result.cow.tag}`}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder.svg';
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="border rounded-lg h-48 flex items-center justify-center bg-muted">
+                    <p className="text-muted-foreground text-sm">No image available</p>
+                  </div>
+                )}
+              </div>
+
               {/* Cow Information */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
@@ -73,7 +99,7 @@ export const VerificationResults = ({ result }: VerificationResultsProps) => {
                 <div>
                   <p className="text-sm text-muted-foreground">Cow Tag:</p>
                   <p className="font-mono font-bold text-primary text-xl">
-                    {result.cow.tag}
+                    {result.cow.cow_tag || result.cow.tag}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -87,7 +113,7 @@ export const VerificationResults = ({ result }: VerificationResultsProps) => {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Age:</p>
-                    <p className="font-medium">{result.cow.age} years</p>
+                    <p className="font-medium">{result.cow.age ? `${result.cow.age} years` : 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Status:</p>
@@ -102,7 +128,7 @@ export const VerificationResults = ({ result }: VerificationResultsProps) => {
                   👤 Owner Information
                 </h3>
                 <div>
-                  <p className="font-semibold text-lg">{result.cow.owner.name}</p>
+                  <p className="font-semibold text-lg">{result.cow.owner?.name || result.cow.owner_name}</p>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">

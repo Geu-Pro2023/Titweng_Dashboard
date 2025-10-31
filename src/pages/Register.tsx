@@ -7,10 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ImageCapture } from "@/components/ui/image-capture";
 import { cattleAPI } from "@/services/api";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/translations";
 
 const Register = () => {
   const [cowTag, setCowTag] = useState("");
   const [nosePrintImages, setNosePrintImages] = useState<{[key: string]: File}>({});
+  const [facialImage, setFacialImage] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     owner_full_name: '',
     owner_email: '',
@@ -22,6 +24,7 @@ const Register = () => {
     age: '',
   });
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchTagInfo();
@@ -48,8 +51,13 @@ const Register = () => {
     e.preventDefault();
     
     const imageCount = Object.keys(nosePrintImages).length;
-    if (imageCount < 5) {
-      toast.error(`Please capture all 5 nose print images. ${imageCount}/5 completed.`);
+    if (imageCount < 3) {
+      toast.error(`Please capture exactly 3 nose print images. ${imageCount}/3 completed.`);
+      return;
+    }
+
+    if (!facialImage) {
+      toast.error('Please capture 1 facial image.');
       return;
     }
 
@@ -60,13 +68,33 @@ const Register = () => {
 
     setLoading(true);
     try {
-      const files = Object.values(nosePrintImages);
+      const nosePrintFiles = Object.values(nosePrintImages);
       const registrationData = {
         ...formData,
         age: parseInt(formData.age),
       };
       
-      const result = await cattleAPI.register(registrationData, files);
+      // Create FormData manually to match backend requirements
+      const formDataToSend = new FormData();
+      Object.keys(registrationData).forEach(key => {
+        if (registrationData[key] !== null && registrationData[key] !== undefined && registrationData[key] !== '') {
+          formDataToSend.append(key, registrationData[key]);
+        }
+      });
+      
+      // Add nose print files (exactly 3)
+      nosePrintFiles.forEach(file => formDataToSend.append('nose_print_files', file));
+      
+      // Add facial image file (exactly 1)
+      formDataToSend.append('facial_image_file', facialImage);
+      
+      const result = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/register-cow`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+        },
+        body: formDataToSend,
+      }).then(res => res.json());
       toast.success(`Cattle registered successfully! Tag: ${result.cow_tag}`);
       
       // Reset form
@@ -81,6 +109,7 @@ const Register = () => {
         age: '',
       });
       setNosePrintImages({});
+      setFacialImage(null);
       fetchTagInfo(); // Get new tag
     } catch (error: any) {
       toast.error(error.message || 'Failed to register cattle');
@@ -92,66 +121,66 @@ const Register = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Register New Cattle</h1>
-        <p className="text-muted-foreground mt-1">
-          Add a new cow to the management system
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('registerNewCattle')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+          {t('registerNewCattle')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Owner Information */}
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Owner Information</CardTitle>
+              <CardTitle>{t('ownerInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="ownerName">Full Name *</Label>
+                <Label htmlFor="ownerName">{t('fullName')} *</Label>
                 <Input 
                   id="ownerName" 
-                  placeholder="Enter owner's full name" 
+                  placeholder={t('fullName')} 
                   value={formData.owner_full_name}
                   onChange={(e) => handleInputChange('owner_full_name', e.target.value)}
                   required 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input 
                   id="email" 
                   type="email" 
-                  placeholder="owner@example.com" 
+                  placeholder={t('email')} 
                   value={formData.owner_email}
                   onChange={(e) => handleInputChange('owner_email', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label htmlFor="phone">{t('phone')} *</Label>
                 <Input 
                   id="phone" 
                   type="tel" 
-                  placeholder="+250 XXX XXX XXX" 
+                  placeholder={t('phone')} 
                   value={formData.owner_phone}
                   onChange={(e) => handleInputChange('owner_phone', e.target.value)}
                   required 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="address">Physical Address *</Label>
+                <Label htmlFor="address">{t('address')} *</Label>
                 <Input 
                   id="address" 
-                  placeholder="District, Sector, Cell" 
+                  placeholder={t('address')} 
                   value={formData.owner_address}
                   onChange={(e) => handleInputChange('owner_address', e.target.value)}
                   required 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nationalId">National ID *</Label>
+                <Label htmlFor="nationalId">{t('nationalId')} *</Label>
                 <Input 
                   id="nationalId" 
-                  placeholder="1 XXXX X XXXXXXX X XX" 
+                  placeholder={t('nationalId')} 
                   value={formData.owner_national_id}
                   onChange={(e) => handleInputChange('owner_national_id', e.target.value)}
                   required 
@@ -163,14 +192,14 @@ const Register = () => {
           {/* Cattle Information */}
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Cattle Details</CardTitle>
+              <CardTitle>{t('cattleDetails')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="breed">Breed *</Label>
+                <Label htmlFor="breed">{t('breed')} *</Label>
                 <Select value={formData.breed} onValueChange={(value) => handleInputChange('breed', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select breed" />
+                    <SelectValue placeholder={t('breed')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Friesian">Friesian</SelectItem>
@@ -182,17 +211,17 @@ const Register = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="color">Color *</Label>
+                <Label htmlFor="color">{t('color')} *</Label>
                 <Input 
                   id="color" 
-                  placeholder="e.g., Black and White" 
+                  placeholder={t('color')} 
                   value={formData.color}
                   onChange={(e) => handleInputChange('color', e.target.value)}
                   required 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age">Age (years) *</Label>
+                <Label htmlFor="age">{t('age')} *</Label>
                 <Input 
                   id="age" 
                   type="number" 
@@ -216,42 +245,68 @@ const Register = () => {
         {/* Nose Print Upload */}
         <Card className="shadow-card mt-6">
           <CardHeader>
-            <CardTitle>Nose Print Images</CardTitle>
+            <CardTitle>{t('nosePrintImages')}</CardTitle>
             <p className="text-sm text-muted-foreground">
               Upload 5 clear images of the cow's nose print from different angles
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-5">
-              {["Front", "Left", "Right", "Top", "Front2"].map((angle) => (
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
+              {["Front", "Left", "Right"].map((angle) => (
                 <ImageCapture
                   key={angle}
-                  label={angle}
+                  label={`Nose ${angle}`}
                   onImageCapture={(file) => handleImageCapture(angle, file)}
                 />
               ))}
             </div>
             <div className="mt-4 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                * Ensure images are well-lit, clear, and show the entire nose print pattern
+                * Capture exactly 3 nose print images from different angles
               </p>
               <p className="text-xs font-medium text-primary">
-                {Object.keys(nosePrintImages).length}/5 images captured
+                {Object.keys(nosePrintImages).length}/3 nose images captured
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Facial Image Upload */}
+        <Card className="shadow-card mt-6">
+          <CardHeader>
+            <CardTitle>Cow Facial Image</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Upload 1 clear facial image of the cow for verification
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="max-w-xs">
+              <ImageCapture
+                label="Facial Image"
+                onImageCapture={(file) => setFacialImage(file)}
+              />
+            </div>
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground">
+                * Ensure the image clearly shows the cow's face
+              </p>
+              <p className="text-xs font-medium text-primary">
+                {facialImage ? '1/1 facial image captured' : '0/1 facial image captured'}
               </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 mt-6">
-          <Button type="submit" size="lg" className="flex-1 md:flex-none" disabled={loading}>
-            {loading ? 'Registering...' : 'Register Cattle'}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
+          <Button type="submit" size="lg" className="flex-1 sm:flex-none" disabled={loading}>
+            {loading ? t('processing') : t('registerNewCattle')}
           </Button>
-          <Button type="button" variant="secondary" size="lg" disabled={loading}>
-            Save as Draft
+          <Button type="button" variant="secondary" size="lg" className="flex-1 sm:flex-none" disabled={loading}>
+            {t('save')}
           </Button>
-          <Button type="button" variant="outline" size="lg" disabled={loading}>
-            Cancel
+          <Button type="button" variant="outline" size="lg" className="flex-1 sm:flex-none" disabled={loading}>
+            {t('cancel')}
           </Button>
         </div>
 

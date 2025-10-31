@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Database, Mail, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Database, Mail, CheckCircle, XCircle, Loader2, Brain } from "lucide-react";
 import { systemAPI } from "@/services/api";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ const System = () => {
   const [dbLoading, setDbLoading] = useState(false);
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [emailConfigStatus, setEmailConfigStatus] = useState<any>(null);
+  const [mlStatus, setMlStatus] = useState<any>(null);
 
   const checkHealth = async () => {
     try {
@@ -67,6 +68,17 @@ const System = () => {
     }
   };
 
+  const testMLModels = async () => {
+    try {
+      const result = await systemAPI.testMLModels();
+      setMlStatus(result);
+      toast.success('ML models tested successfully');
+    } catch (error: any) {
+      toast.error('ML model test failed');
+      setMlStatus({ status: 'error', message: error.message });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -76,7 +88,7 @@ const System = () => {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Health Check */}
         <Card className="shadow-card">
           <CardHeader>
@@ -192,6 +204,38 @@ const System = () => {
               {emailLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Test Email
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* ML Models Test */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              ML Models
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={testMLModels} variant="outline" className="w-full">
+              Test ML Models
+            </Button>
+            {mlStatus && (
+              <div className="p-3 rounded-lg bg-muted">
+                <div className="flex items-center gap-2">
+                  {mlStatus.status === 'success' ? (
+                    <CheckCircle className="h-4 w-4 text-success" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  )}
+                  <Badge variant={mlStatus.status === 'success' ? 'default' : 'destructive'}>
+                    {mlStatus.status}
+                  </Badge>
+                </div>
+                {mlStatus.message && (
+                  <p className="text-sm text-muted-foreground mt-2">{mlStatus.message}</p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

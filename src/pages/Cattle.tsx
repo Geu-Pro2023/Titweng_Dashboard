@@ -10,6 +10,7 @@ import { DataExport } from "@/components/ui/data-export";
 import { BarcodeScanner } from "@/components/ui/barcode-scanner";
 import { cattleAPI } from "@/services/api";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/translations";
 
 const Cattle = () => {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -18,6 +19,7 @@ const Cattle = () => {
   const [cattle, setCattle] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchCattle();
@@ -61,12 +63,26 @@ const Cattle = () => {
     setDetailsModalOpen(true);
   };
 
+  const handleDeleteCow = async (cowTag: string) => {
+    if (!confirm('Are you sure you want to delete this cow? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await cattleAPI.delete(cowTag);
+      toast.success('Cow deleted successfully');
+      fetchCattle();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete cow');
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Cattle Management</h1>
-          <p className="text-muted-foreground mt-1">Loading cattle data...</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('cattleManagement')}</h1>
+          <p className="text-muted-foreground mt-1">{t('loading')}</p>
         </div>
         <div className="h-64 bg-muted animate-pulse rounded-lg" />
       </div>
@@ -74,14 +90,14 @@ const Cattle = () => {
   }
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Cattle Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Browse and manage all registered cattle in South Sudan
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">{t('cattleManagement')}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            {t('cattleList')}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           <BarcodeScanner onScanResult={(result) => setSearchTerm(result)} />
           <DataExport 
             data={filteredCattle}
@@ -101,14 +117,14 @@ const Cattle = () => {
       {/* Search and Filters */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
+          <CardTitle>{t('search')} & {t('filter')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by tag, owner name, or breed..."
+                placeholder={`${t('search')} by tag, owner name, or breed...`}
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -116,7 +132,7 @@ const Cattle = () => {
             </div>
             <Button variant="secondary">
               <Filter className="mr-2 h-4 w-4" />
-              Filters
+              {t('filter')}
             </Button>
           </div>
         </CardContent>
@@ -125,24 +141,24 @@ const Cattle = () => {
       {/* Data Table */}
       <Card className="shadow-card">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
+            <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cow Tag</TableHead>
-                  <TableHead>Owner Name</TableHead>
-                  <TableHead>Breed</TableHead>
-                  <TableHead>Color</TableHead>
-                  <TableHead>Age</TableHead>
-                  <TableHead>Registration Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('cattleId')}</TableHead>
+                  <TableHead>{t('ownerName')}</TableHead>
+                  <TableHead>{t('breed')}</TableHead>
+                  <TableHead>{t('color')}</TableHead>
+                  <TableHead>{t('age')}</TableHead>
+                  <TableHead>{t('registrationDate')}</TableHead>
+                  <TableHead className="text-right">{t('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredCattle.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      {searchTerm ? 'No cattle found matching your search.' : 'No cattle registered yet.'}
+                      {searchTerm ? t('noData') : t('noData')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -157,28 +173,36 @@ const Cattle = () => {
                       <TableCell>{cow.age} years</TableCell>
                       <TableCell>{new Date(cow.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-1 sm:gap-2">
                         <Button 
-                          size="icon" 
+                          size="sm" 
                           variant="ghost"
                           onClick={() => handleViewDetails(cow)}
-                          title="View Details"
+                          title={t('view')}
+                          className="h-8 w-8 p-0"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                         <Button 
-                          size="icon" 
+                          size="sm" 
                           variant="ghost"
                           onClick={() => setTransferWizardOpen(true)}
                           title="Transfer Ownership"
+                          className="h-8 w-8 p-0"
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Edit">
-                          <Edit className="h-4 w-4" />
+                        <Button size="sm" variant="ghost" title={t('edit')} className="h-8 w-8 p-0">
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="text-destructive" title="Delete">
-                          <Trash2 className="h-4 w-4" />
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-destructive h-8 w-8 p-0" 
+                          title={t('delete')}
+                          onClick={() => handleDeleteCow(cow.cow_tag)}
+                        >
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </div>
                     </TableCell>

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://titweng-fastapi-backend.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://titweng-app-a3hufygwcphxhkc2.canadacentral-01.azurewebsites.net';
 
 // Get token from localStorage
 const getAuthToken = () => {

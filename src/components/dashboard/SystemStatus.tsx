@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Database, Cpu, Mail, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { systemAPI } from "@/services/api";
+import { useTranslation } from "@/lib/translations";
 
 export const SystemStatus = () => {
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [emailStatus, setEmailStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     checkSystemHealth();
@@ -49,12 +51,12 @@ export const SystemStatus = () => {
       case 'healthy':
       case 'success':
       case 'operational':
-        return 'Operational';
+        return t('healthy');
       case 'warning':
-        return 'Warning';
+        return t('warning');
       case 'error':
       case 'failed':
-        return 'Error';
+        return t('error');
       default:
         return 'Unknown';
     }
@@ -64,7 +66,7 @@ export const SystemStatus = () => {
     return (
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>System Status</CardTitle>
+          <CardTitle>{t('systemStatus')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -79,25 +81,25 @@ export const SystemStatus = () => {
 
   const statusItems = [
     {
-      name: "Database",
+      name: t('databaseStatus'),
       status: healthStatus?.database_status || 'unknown',
       icon: Database,
       message: healthStatus?.database_message || 'Checking connection...',
     },
     {
-      name: "API Server",
+      name: t('apiStatus'),
       status: healthStatus?.status || 'unknown',
       icon: Cpu,
       message: healthStatus?.message || 'Checking server status...',
     },
     {
-      name: "Email Service",
+      name: 'Email Service',
       status: emailStatus?.status || 'unknown',
       icon: Mail,
       message: emailStatus?.message || 'Checking email configuration...',
     },
     {
-      name: "ML Model",
+      name: 'ML Model',
       status: healthStatus?.ml_status || 'operational',
       icon: MessageSquare,
       message: 'Nose print verification service',
@@ -107,7 +109,7 @@ export const SystemStatus = () => {
   return (
     <Card className="shadow-card">
       <CardHeader>
-        <CardTitle>System Status</CardTitle>
+        <CardTitle>{t('systemStatus')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

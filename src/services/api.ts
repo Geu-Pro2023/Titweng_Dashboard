@@ -39,6 +39,10 @@ export const cattleAPI = {
     });
     return apiClient.postForm(`/admin/cows/${id}/transfer`, formData);
   },
+  delete: (cowTag: string) => apiClient.delete(`/admin/cow/${cowTag}/delete`),
+  deleteWithDetails: (cowTag: string) => apiClient.delete(`/admin/cow/${cowTag}/delete-full`),
+  getFace: (cowTag: string) => apiClient.get(`/admin/cow/${cowTag}/face`),
+  downloadReceipt: (cowTag: string) => apiClient.get(`/admin/receipt/${cowTag}`),
   getTagInfo: () => apiClient.get('/admin/cow-tag/info'),
 };
 
@@ -95,10 +99,26 @@ export const receiptAPI = {
 export const systemAPI = {
   healthCheck: () => apiClient.get('/health'),
   testEmailConfig: () => apiClient.get('/test-email-config'),
+  testMLModels: () => apiClient.get('/test-ml-models'),
   sendTestEmail: async (email: string) => {
     const formData = new FormData();
     formData.append('test_email', email);
     return apiClient.postForm('/send-test-email', formData);
   },
   setupDatabase: () => apiClient.post('/setup-database', {}),
+};
+
+// Mobile API (for reference/monitoring)
+export const mobileAPI = {
+  getCowFace: (cowTag: string) => apiClient.get(`/mobile/cow/${cowTag}/face`),
+  createReport: (data: any) => apiClient.post('/mobile/report', data),
+  createGPSReport: (data: any) => apiClient.post('/mobile/report/gps', data),
+  getReport: (reportId: string) => apiClient.get(`/mobile/report/${reportId}`),
+  verifyLive: (data: any) => apiClient.post('/mobile/verify/live', data),
+  verifyNose: (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    return apiClient.postForm('/mobile/verify/nose', formData);
+  },
+  verifyTag: (cowTag: string) => apiClient.get(`/mobile/verify/tag/${cowTag}`),
 };
