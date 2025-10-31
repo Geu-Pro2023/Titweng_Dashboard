@@ -32,11 +32,6 @@ jobs:
         with:
           name: node-app
           path: .
-          exclude: |
-            node_modules/
-            .git/
-            .github/
-            .vite/
 
   deploy:
     runs-on: ubuntu-latest
