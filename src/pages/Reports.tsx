@@ -160,22 +160,22 @@ const Reports = () => {
                           {report.status.replace('_', ' ').charAt(0).toUpperCase() + report.status.replace('_', ' ').slice(1)}
                         </span>
                       </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          size="icon" 
-                          variant="ghost"
-                          onClick={() => handleViewReport(report)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {report.status !== "resolved" && (
-                          <Button size="icon" variant="ghost" className="text-success">
-                            <CheckCircle className="h-4 w-4" />
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={() => handleViewReport(report)}
+                          >
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
+                          {report.status !== "resolved" && (
+                            <Button size="icon" variant="ghost" className="text-success">
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
